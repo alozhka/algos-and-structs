@@ -1,6 +1,6 @@
-#include <iostream>
+#include "libs/files-hanlder.h"
 
 int main() {
-  std::cout << "Hello, World!" << std::endl;
+  files::reverse_file_strings("../tests/one-string.txt");
   return 0;
 }

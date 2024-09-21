@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <vector>
 
 void files::reverse_file_strings(const std::string &file_name) {
@@ -20,18 +21,20 @@ void files::reverse_file_strings(const std::string &file_name) {
   std::vector<std::streampos> positions;
   std::string line;
 
-  // Считываем смещения строк в файле
-  while (std::getline(inFile, line)) {
-    positions.push_back(inFile.tellg());
+  while (inFile.peek() != EOF) {
+    positions.push_back(inFile.tellg());  // Сохраняем позицию перед чтением строки
+    std::getline(inFile, line);
   }
 
   // Записываем строки в обратном порядке
   for (auto it = positions.rbegin(); it != positions.rend(); ++it) {
     inFile.clear(); // Сбрасываем флаги ошибок
-    inFile.seekg(it == positions.rbegin() ? std::streampos(0) : *(it - 1)); // Устанавливаем указатель
+    inFile.seekg(*it); // Устанавливаем указатель
     std::getline(inFile, line); // Считываем строку
     outFile << line << std::endl;  // Записываем строку в выходной файл
   }
 
+
   inFile.close();
-  outFile.close();}
+  outFile.close();
+}

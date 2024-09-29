@@ -71,6 +71,11 @@ namespace Analyzer::ParseHelper
 
 namespace Analyzer::Pascal::Match
 {
+  bool IsKeyword(const std::string &keyword)
+  {
+    return keyword == "REPEAT" || keyword == "BEGIN" || keyword == "RECORD" || keyword == "IF" || keyword == "UNTIL" ||
+           keyword == "END" || keyword == "ELSE" || keyword == "THEN";
+  }
   bool IsOpenedKeyword(const std::string &keyword)
   {
     return keyword == "REPEAT" || keyword == "BEGIN" || keyword == "RECORD" || keyword == "IF";
@@ -100,7 +105,7 @@ namespace Analyzer::Pascal
     Node *stack = nullptr;
     std::string line;
     int lineNumber = 0;
-    bool hasError = false, expectThen = false, expectEnd = false;
+    char state = 'C'; // C - common, I - in if .. then, R - in record
 
     while (getline(stream, line))
     {
@@ -111,33 +116,47 @@ namespace Analyzer::Pascal
       {
         const std::string &word = ParseHelper::ToUpperCase(ParseHelper::getNextKeyword(line, index));
 
-        if (Match::IsOpenedKeyword(word) || word == "THEN")
+        if (Match::IsKeyword(word))
         {
-          if (expectEnd)
-            hasError = true;
-          if (expectThen && word != "THEN")
-            hasError = true;
-          else
-            expectThen = false;
-          if (word == "IF")
-            expectThen = true;
-          if (word == "RECORD")
-            expectEnd = true;
-          Push(stack, word, lineNumber);
-        }
+          if (state == 'C' && Match::IsClosedKeyword(word))
+          {
+            const Data *data = Pop(stack);
+            if (data == nullptr || !Match::AreMatchingKeywords(data->value, word))
+              state = 'E';
+          }
 
-        if (Match::IsClosedKeyword(word))
-        {
-          if (expectEnd && word == "END")
-            expectEnd = false;
-          if (const Data *data = Pop(stack); data == nullptr || !Match::AreMatchingKeywords(data->value, word))
-            hasError = true;
-        }
-        if (hasError)
-        {
-          std::cout << "Ошибка вложенности в строке " << lineNumber << std::endl;
-          ClearStack(stack);
-          return;
+          switch (state)
+          {
+            case 'C':
+              if (word == "IF")
+                state = 'I';
+              if (word == "RECORD")
+                state = 'R';
+              if (Match::IsOpenedKeyword(word))
+                Push(stack, word, lineNumber);
+              break;
+            case 'I':
+              if (word == "THEN")
+                state = 'C';
+              else
+                state = 'E';
+              break;
+            case 'R':
+              if (word == "END")
+              {
+                Pop(stack);
+                state = 'C';
+              }
+              else
+                state = 'E';
+            default:;
+          }
+
+          if (state == 'E')
+          {
+            std::cout << "Ошибка вложенности в строке " << lineNumber << std::endl;
+            return;
+          }
         }
       }
     }

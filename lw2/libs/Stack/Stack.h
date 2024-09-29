@@ -18,8 +18,8 @@ struct Node
   Node *next;
 };
 
-Node *InitStack();
-bool IsEmpty(const Node*& stack);
+void ClearStack(Node*& top);
+bool IsEmpty(Node*& stack);
 void Push(Node *&stack, const std::string &value, size_t line);
 Data* Pop(Node *&stack);
 

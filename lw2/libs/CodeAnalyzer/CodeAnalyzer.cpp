@@ -12,19 +12,48 @@
 
 namespace Analyzer::ParseHelper
 {
-  std::string getNextWord(const std::string &line, size_t &index)
+  std::string getNextKeyword(const std::string &line, size_t &index)
   {
     std::string word;
-    while (index < line.length() && isalpha(line[index]))
+    bool inDoubleQuoteString = false;
+    bool inSingleQuoteString = false;
+    bool inComment = false;
+
+    while (index < line.length())
     {
-      word += line[index];
+      // Проверка на открывающую кавычку
+      switch (line[index])
+      {
+        case '"':
+          inDoubleQuoteString = !inDoubleQuoteString;
+          break;
+        case '\'':
+          inSingleQuoteString = !inSingleQuoteString;
+          break;
+        case '{':
+          inComment = true;
+          break;
+        case '}':
+          inComment = false;
+        default:;
+      }
+
+      bool canInsert = !inDoubleQuoteString && !inSingleQuoteString && !inComment;
+      if (canInsert)
+      {
+        if (isalpha(line[index])) // Проверяем, является ли текущий символ буквой
+        {
+          word += line[index]; // Добавляем символ к слову
+        }
+        else if (!word.empty()) // Если слово не пустое, выходим из цикла
+        {
+          break;
+        }
+      }
+
       index++;
     }
-    // Пропустить все неалфавитные символы после слова
-    while (index < line.length() && !isalpha(line[index]))
-    {
-      index++;
-    }
+
     return word;
   }
 
@@ -71,33 +100,38 @@ namespace Analyzer::Pascal
     Node *stack = nullptr;
     std::string line;
     int lineNumber = 0;
-    bool hasError = false;
+    bool hasError = false, expectThen = false, expectEnd = false;
 
     while (getline(stream, line))
     {
       lineNumber++;
       size_t index = 0;
-      bool expectThen = false;
 
       while (index < line.length())
       {
-        if (const std::string &word = ParseHelper::ToUpperCase(ParseHelper::getNextWord(line, index)); !word.empty())
+        const std::string &word = ParseHelper::ToUpperCase(ParseHelper::getNextKeyword(line, index));
+
+        if (Match::IsOpenedKeyword(word) || word == "THEN")
         {
+          if (expectEnd)
+            hasError = true;
           if (expectThen && word != "THEN")
             hasError = true;
           else
             expectThen = false;
+          if (word == "IF")
+            expectThen = true;
+          if (word == "RECORD")
+            expectEnd = true;
+          Push(stack, word, lineNumber);
+        }
 
-          if (Match::IsOpenedKeyword(word))
-          {
-            Push(stack, word, lineNumber);
-            if (word == "IF")
-              expectThen = true;
-          }
-
-          if (Match::IsClosedKeyword(word))
-            if (const Data *data = Pop(stack); !Match::AreMatchingKeywords(data->value, word))
-              hasError = true;
+        if (Match::IsClosedKeyword(word))
+        {
+          if (expectEnd && word == "END")
+            expectEnd = false;
+          if (const Data *data = Pop(stack); data == nullptr || !Match::AreMatchingKeywords(data->value, word))
+            hasError = true;
         }
         if (hasError)
         {
@@ -112,17 +146,17 @@ namespace Analyzer::Pascal
     ClearStack(stack);
   }
 
-void Analyze(const std::string &filename)
-{
-  std::ifstream stream(filename);
-  if (!stream.is_open())
+  void Analyze(const std::string &filename)
   {
-    std::cerr << "Ошибка при открытии файла!\n";
-    return;
-  }
+    std::ifstream stream(filename);
+    if (!stream.is_open())
+    {
+      std::cerr << "Ошибка при открытии файла!\n";
+      return;
+    }
 
-  char repeat = 'y';
-  while (repeat == 'y' || repeat == 'Y')
+    char repeat = 'y';
+    while (repeat == 'y' || repeat == 'Y')
   {
     stream.clear();
     stream.seekg(0);

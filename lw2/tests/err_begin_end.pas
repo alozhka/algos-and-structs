@@ -5,5 +5,4 @@ begin
   if true then
   begin
     writeln('Nested begin block.');
-  // Ожидается END для вложенного блока
 end.

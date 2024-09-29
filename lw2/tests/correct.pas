@@ -16,22 +16,24 @@ begin
   counter := 0;
 
   repeat
-    if person.Age > 18 then
-    begin
-      writeln('Adult');
-      if person.Age < 65 then
+    if person.Age > 18
+    then
       begin
-        writeln('Working age');
+        writeln('Adult');
+        if person.Age < 65
+        then
+          begin
+            writeln('Working age');
+          end
+        else
+          begin
+            writeln('Retired');
+          end;
       end
-      else
-      begin
-        writeln('Retired');
-      end;
-    end
     else
-    begin
-      writeln('Minor');
-    end;
+      begin
+        writeln('Minor');
+      end;
     counter := counter + 1;
   until counter = 3;
 

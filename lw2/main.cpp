@@ -15,6 +15,6 @@ RECORD..END. Конец оператора  определяется  точко
 
 int main()
 {
-  Analyzer::Pascal::Analyze("../tests/err_no_then.pas");
+  Analyzer::Pascal::Analyze("../tests/correct.pas");
   return 0;
 }

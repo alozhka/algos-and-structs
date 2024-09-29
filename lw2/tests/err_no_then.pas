@@ -1,5 +1,5 @@
 program TestIfThenError;
 
 begin
-  if true writeln('Condition is true.');  // Ожидался THEN
+  if true writeln('Condition is true.');
 end.

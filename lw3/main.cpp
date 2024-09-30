@@ -9,8 +9,17 @@
 
 #include <iostream>
 
-int main()
+
+#include "libs/TreeViewer.h"
+
+int main(const int argc, char* argv[])
 {
-  std::cout << "Hello, World!" << std::endl;
+  if (argc < 2)
+  {
+    std::cerr << "Отсутствует путь до файла";
+    return 1;
+  }
+  Tree::Viewer::TreeViewer viewer;
+  viewer.LoadFromFile(argv[1]);
   return 0;
 }

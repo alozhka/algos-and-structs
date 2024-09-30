@@ -155,10 +155,18 @@ namespace Analyzer::Pascal
           if (state == 'E')
           {
             std::cout << "Ошибка вложенности в строке " << lineNumber << std::endl;
+            ClearStack(stack);
             return;
           }
         }
       }
+    }
+
+    if (!IsEmpty(stack))
+    {
+      std::cout << "Ошибка вложенности в строке " << lineNumber << std::endl;
+      ClearStack(stack);
+      return;
     }
 
     std::cout << "Вложенность конструкций корректна.\n";

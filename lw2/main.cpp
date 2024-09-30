@@ -1,6 +1,6 @@
 /*
 Ложкин Сергей, ПС-21
-Среда: C++
+Среда: CLion, C++
 
 26. Программа на ПАСКАЛЕ включает такие  сочетания ключевых
 слов,    как    REPEAT..UNTIL,   IF..THEN..ELSE,   BEGIN..END,
@@ -11,10 +11,16 @@ RECORD..END. Конец оператора  определяется  точко
 
 */
 
+#include <iostream>
 #include "libs/CodeAnalyzer/CodeAnalyzer.h"
 
-int main()
+int main(const int argc, char* argv[])
 {
-  Analyzer::Pascal::Analyze("../tests/err_repeat_until.pas");
+  if (argc < 2)
+  {
+    std::cerr << "Не передано имя файла";
+    return 1;
+  }
+  Analyzer::Pascal::Analyze(argv[1]);
   return 0;
 }

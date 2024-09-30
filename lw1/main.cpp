@@ -1,7 +1,7 @@
 /*
 
 Ложкин Сергей. ПС-21.
-Среда: c++
+Среда: CLion, C++
 
 27. Задан  текстовый  файл. Каждая строка содержит не более
 255 символов. Создать  новый  файл,  в  котором  строки  будут
@@ -18,12 +18,16 @@
 #include "libs/files-handler.h"
 
 
-int main() {
+int main(int argc, char* argv[]) {
   boost::timer timer;
+  if (argc < 2) {
+    std::cerr << "Не передано имя файла";
+    return 1;
+  }
 
   setlocale(LC_ALL, "RUS");
   timer.restart();
-  files::reverse_file_strings("../tests/MET_BIG.TXT");
+  files::reverse_file_strings(argv[1]);
   const double duration = timer.elapsed();
 
   std::cout << "Время: " << duration << std::endl;

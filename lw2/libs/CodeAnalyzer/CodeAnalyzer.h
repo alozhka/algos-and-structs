@@ -21,6 +21,7 @@ namespace Pascal
      */
     char _state = 'O';
 
+    void HandleMatch(const std::string &word);
     void ProcessState(const std::string &word);
     void CheckNesting();
 

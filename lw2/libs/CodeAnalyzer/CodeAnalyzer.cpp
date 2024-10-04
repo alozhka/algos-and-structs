@@ -90,6 +90,26 @@ namespace Pascal
     return lower;
   }
 
+  void CodeAnalyzer::HandleMatch(const std::string &word)
+  {
+    if (_state == 'M' && IsClosedKeyword(word))
+    {
+      if (_stack.IsEmpty())
+      {
+        _state = 'E';
+        return;
+      }
+
+      const std::string data = _stack.Pop();
+      if (data == "IF" && word != "ELSE")
+      {
+        _stack.Pop();
+        return;
+      }
+      if (!AreMatchingKeywords(data, word))
+        _state = 'E';
+    }
+  }
   void CodeAnalyzer::ProcessState(const std::string &word)
   {
     switch (_state)
@@ -142,12 +162,7 @@ namespace Pascal
       {
         if (const std::string &word = ToUpperCase(GetNextKeyword(line, index)); IsKeyword(word))
         {
-          if (_state == 'M' && IsClosedKeyword(word))
-          {
-            const std::string data = _stack.Pop();
-            if (!AreMatchingKeywords(data, word))
-              _state = 'E';
-          }
+          this->HandleMatch(word);
           this->ProcessState(word);
           if (_state == 'E')
           {

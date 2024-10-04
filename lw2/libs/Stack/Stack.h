@@ -6,15 +6,10 @@
 #define STACK_H
 #include <string>
 
-struct Data
-{
-  std::string value;
-  size_t line;
-};
 
 struct Node
 {
-  Data* data;
+  std::string data;
   Node *next;
 };
 

@@ -8,6 +8,7 @@
 #include <cctype>
 #include <fstream>
 #include <iostream>
+#include <utility>
 
 
 namespace Analyzer::ParseHelper
@@ -74,11 +75,11 @@ namespace Analyzer::Pascal::Match
   bool IsKeyword(const std::string &keyword)
   {
     return keyword == "REPEAT" || keyword == "BEGIN" || keyword == "RECORD" || keyword == "IF" || keyword == "UNTIL" ||
-           keyword == "END" || keyword == "ELSE" || keyword == "THEN";
+           keyword == "END" || keyword == "ELSE" || keyword == "THEN" || keyword == ".";
   }
   bool IsOpenedKeyword(const std::string &keyword)
   {
-    return keyword == "REPEAT" || keyword == "BEGIN" || keyword == "RECORD" || keyword == "IF";
+    return keyword == "REPEAT" || keyword == "BEGIN" || keyword == "IF";
   }
 
   bool IsClosedKeyword(const std::string &keyword)
@@ -104,54 +105,57 @@ namespace Analyzer::Pascal
   {
     Node *stack = nullptr;
     std::string line;
-    int lineNumber = 0;
-    char state = 'C'; // C - common, I - in if .. then, R - in record
+    size_t lineNumber = 0;
+    char state = 'O'; // O - origin, M - main, C - common, I - in if .. then, R - in record
 
     while (getline(stream, line))
     {
       lineNumber++;
       size_t index = 0;
-
       while (index < line.length())
       {
         const std::string &word = ParseHelper::ToUpperCase(ParseHelper::getNextKeyword(line, index));
-
         if (Match::IsKeyword(word))
         {
-          if (state == 'C' && Match::IsClosedKeyword(word))
+          if (state == 'M' && Match::IsClosedKeyword(word))
           {
             const Data *data = Pop(stack);
-            if (data == nullptr || !Match::AreMatchingKeywords(data->value, word))
+            if (data == nullptr || (IsEmpty(stack) || data->value != "BEGIN") || !Match::AreMatchingKeywords(data->value, word))
               state = 'E';
           }
-
           switch (state)
           {
-            case 'C':
-              if (word == "IF")
-                state = 'I';
+            case 'O':
               if (word == "RECORD")
                 state = 'R';
-              if (Match::IsOpenedKeyword(word))
+              else if (word == "BEGIN")
+              {
+                state = 'M';
                 Push(stack, word, lineNumber);
-              break;
-            case 'I':
-              if (word == "THEN")
-                state = 'C';
+              }
               else
                 state = 'E';
               break;
             case 'R':
               if (word == "END")
-              {
-                Pop(stack);
-                state = 'C';
-              }
+                state = 'O';
               else
                 state = 'E';
-            default:;
+              break;
+            case 'I':
+              if (word == "THEN")
+                state = 'M';
+              else
+                state = 'E';
+              break;
+            case 'M':
+              if (Match::IsOpenedKeyword(word))
+              {
+                Push(stack, word, lineNumber);
+                if (word == "IF")
+                  state = 'I';
+              }
           }
-
           if (state == 'E')
           {
             std::cout << "Ошибка вложенности в строке " << lineNumber << std::endl;
@@ -168,7 +172,6 @@ namespace Analyzer::Pascal
       ClearStack(stack);
       return;
     }
-
     std::cout << "Вложенность конструкций корректна.\n";
     ClearStack(stack);
   }

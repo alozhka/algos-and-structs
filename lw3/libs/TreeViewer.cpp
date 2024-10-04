@@ -15,11 +15,10 @@ namespace Tree::Viewer
 
     if (!stream.is_open())
     {
-      std::cerr << "Ошибка при открытии файла";
-      return;
+      throw std::invalid_argument("Ошибка при открытии файла");
     }
 
-    std::cout << _tree->value;
+    
   }
   void TreeViewer::Show() const
   {

@@ -1,21 +1,35 @@
 //
-// Created by sergey on 9/29/24.
+// Created by sergey on 10/4/24.
 //
 
 #ifndef CODEANALYZER_H
 #define CODEANALYZER_H
-#include <string>
+#include <fstream>
 
-namespace Analyzer::Pascal::Match
+
+#include "../Stack/Stack.h"
+
+namespace Pascal
 {
-  bool IsOpenedKeyword(const std::string& keyword);
-  bool IsClosedKeyword(const std::string& keyword);
-  bool AreMatchingKeywords(const std::string& left, const std::string& right);
-}
 
-namespace Analyzer::Pascal
-{
-  void Analyze(const std::string& filename);
-}
+  class CodeAnalyzer
+  {
+    Stack::Stack _stack;
+    std::ifstream _stream;
+    /*
+     * O - origin, M - main, C - common, I - in if .. then, R - in record
+     */
+    char _state = 'O';
 
-#endif //CODEANALYZER_H
+    void ProcessState(const std::string &word);
+    void CheckNesting();
+
+  public:
+    explicit CodeAnalyzer(): _stack(), _stream() {};
+
+    void Analyze(const std::string &filename);
+  };
+
+} // namespace Pascal
+
+#endif // CODEANALYZER_H

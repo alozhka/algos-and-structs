@@ -124,9 +124,10 @@ namespace Pascal
           if (word == "IF")
             _state = 'I';
         }
-      break;
+        break;
     }
   }
+
   void CodeAnalyzer::CheckNesting()
   {
     std::string line;
@@ -139,13 +140,12 @@ namespace Pascal
       size_t index = 0;
       while (index < line.length())
       {
-        const std::string &word = ToUpperCase(GetNextKeyword(line, index));
-        if (IsKeyword(word))
+        if (const std::string &word = ToUpperCase(GetNextKeyword(line, index)); IsKeyword(word))
         {
           if (_state == 'M' && IsClosedKeyword(word))
           {
             const std::string data = _stack.Pop();
-            if ((_stack.IsEmpty() || data != "BEGIN") || !AreMatchingKeywords(data, word))
+            if (!AreMatchingKeywords(data, word))
               _state = 'E';
           }
           this->ProcessState(word);
@@ -158,6 +158,15 @@ namespace Pascal
         }
       }
     }
+
+    if (!_stack.IsEmpty())
+    {
+      std::cout << "Ошибка вложенности в строке " << lineNumber << std::endl;
+      _stack.Clear();
+      return;
+    }
+    std::cout << "Вложенность конструкций корректна.\n";
+    _stack.Clear();
   }
 
   void CodeAnalyzer::Analyze(const std::string &filename)

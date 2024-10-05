@@ -7,22 +7,26 @@
 #include <string>
 #include <vector>
 
+
 namespace Tree::Viewer
 {
+  const enum NodeType { Default, And, Or };
+
   struct Node
   {
     std::string value;
+    NodeType type;
     std::vector<Node *> children;
 
-    explicit Node(const std::string &value);
+    Node(std::string value, const NodeType type) : value(std::move(value)), type(type) {}
   };
 
   class TreeViewer
   {
-    Node *_tree;
+    Node *_node;
 
   public:
-    TreeViewer() : _tree(nullptr) {}
+    TreeViewer() : _node(nullptr) {}
 
     void LoadFromFile(const std::string &filename);
     void Show() const;

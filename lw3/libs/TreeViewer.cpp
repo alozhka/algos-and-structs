@@ -25,13 +25,13 @@ namespace Tree::Viewer
       case 'O':
         type = Or;
         break;
-      case 'B':
+      case 'D':
         type = Default;
         break;
       default:
         throw std::runtime_error("Неизвестный тип узла");
     }
-    std::string value = str.substr(depth + 2, value.length() - 1); // парсим значение
+    std::string value = str.substr(depth + 2, str.length() - depth - 3); // парсим значение
     return new Node(value, type);
   }
   void TreeViewer::LoadFromFile(const std::string &filename)
@@ -50,6 +50,7 @@ namespace Tree::Viewer
     while (std::getline(stream, line))
     {
       Node *node = ParseToNode(line, depth);
+      _node = node;
     }
   }
   void TreeViewer::Show() const { std::cout << _node->value << "Зашёл в вывод\n";

@@ -10,7 +10,7 @@
 
 namespace Tree::Viewer
 {
-  const enum NodeType { Default, And, Or };
+  enum NodeType { Default, And, Or };
 
   struct Node
   {

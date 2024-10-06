@@ -71,6 +71,20 @@ namespace Tree::Viewer
     _node = nodes.empty() ? nullptr : nodes.front();
   }
 
+  std::string PrintNodeType(const NodeType type)
+  {
+    switch (type)
+    {
+      case And:
+        return "[И]";
+      case Or:
+        return "[Или]";
+      case Default:
+      default:
+        return "";
+    }
+  }
+
   void TreeViewer::Show() const
   {
     std::stack<std::tuple<Node *, std::string, bool>> nodes;
@@ -87,13 +101,12 @@ namespace Tree::Viewer
       else
         std::cout << "├──";
 
-      std::cout << node->value << std::endl;
+      std::cout << " " << PrintNodeType(node->type) << " " << node->value << std::endl;
 
       for (int i = node->children.size() - 1; i >= 0; --i)
       {
-        bool childIsLast = (i == node->children.size() - 1);
-        std::string newIndent = indent + (childIsLast ? "   " : "|   ");
-        nodes.push({node->children[i], newIndent, childIsLast});
+        std::string newIndent = indent + (isLast ? "   " : "|   ");
+        nodes.push({node->children[i], newIndent, i == node->children.size() - 1});
       }
     }
   }

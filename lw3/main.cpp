@@ -20,16 +20,23 @@ int main(const int argc, char *argv[])
     return 1;
   }
 
-  try
+  char repeat = 'y';
+  Tree::Viewer::TreeViewer viewer;
+  do
   {
-    Tree::Viewer::TreeViewer viewer;
-    viewer.LoadFromFile(argv[1]);
-    viewer.Show();
-  }
-  catch (std::exception& e)
-  {
-    std::cerr << e.what() << std::endl;
-  }
+    try
+    {
+      viewer.LoadFromFile(argv[1]);
+      viewer.Show();
+    }
+    catch (std::exception &e)
+    {
+        std::cerr << e.what() << std::endl;
+      }
+
+    std::cout << "Повторить считывание из файла? (Y/n): ";
+    std::cin >> repeat;
+    } while (repeat == 'Y' || repeat == 'y');
 
   return 0;
 }

@@ -6,6 +6,8 @@
 
 #include <fstream>
 #include <iostream>
+#include <ranges>
+#include <stack>
 
 namespace Tree::Viewer
 {
@@ -45,7 +47,7 @@ namespace Tree::Viewer
 
     std::string line;
     size_t depth = 0;
-    std::vector<Node*> nodes;
+    std::vector<Node *> nodes;
 
     while (std::getline(stream, line))
     {
@@ -57,7 +59,8 @@ namespace Tree::Viewer
       }
       else
       {
-        while (nodes.size() > depth) {
+        while (nodes.size() > depth)
+        {
           nodes.pop_back();
         }
         nodes.back()->AppendChild(parsedNode);
@@ -70,6 +73,29 @@ namespace Tree::Viewer
 
   void TreeViewer::Show() const
   {
+    std::stack<std::tuple<Node *, std::string, bool>> nodes;
+    nodes.emplace(_node, "", true);
+
+    while (!nodes.empty())
+    {
+      auto [node, indent, isLast] = nodes.top();
+      nodes.pop();
+
+      std::cout << indent;
+      if (isLast)
+        std::cout << "└──";
+      else
+        std::cout << "├──";
+
+      std::cout << node->value << std::endl;
+
+      for (int i = node->children.size() - 1; i >= 0; --i)
+      {
+        bool childIsLast = (i == node->children.size() - 1);
+        std::string newIndent = indent + (childIsLast ? "   " : "|   ");
+        nodes.push({node->children[i], newIndent, childIsLast});
+      }
+    }
   }
 
 } // namespace Tree::Viewer

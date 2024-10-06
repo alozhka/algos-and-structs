@@ -30,46 +30,8 @@ namespace Tree::Viewer
       default:
         throw std::runtime_error("Неизвестный тип узла");
     }
-    std::string value = str.substr(depth + 2, str.length() - depth - 3); // парсим значение
+    const std::string value = str.substr(depth + 2, str.length() - depth - 3); // парсим значение
     return new Node(value, type);
-  }
-  void ComputeDepth(std::vector<size_t> &currentChildIndexes, const size_t depth)
-  {
-    if (currentChildIndexes.empty())
-      currentChildIndexes = {0};
-    else if (currentChildIndexes.size() - 1 == depth)
-      currentChildIndexes.back()++;
-    else if (currentChildIndexes.size() - 1 < depth)
-      currentChildIndexes.push_back(0); // зашли глубже
-    else // выходим из глубин и удаляем данные
-    {
-      while (currentChildIndexes.size() + 1 != depth)
-      {
-        currentChildIndexes.pop_back();
-      }
-    }
-  }
-
-  Node *FindCurrectNode(Node *&node, const std::vector<size_t> &indexes, const size_t depth)
-  {
-    Node *temp = node;
-    for (size_t i = 0; i < depth - 1; i++)
-    {
-      temp = temp->children.at(indexes.at(i));
-    }
-    return temp;
-  }
-
-  void InsertNode(Node *parent, Node *newNode)
-  {
-    if (parent == nullptr)
-    {
-      parent = newNode;
-    }
-    else
-    {
-      parent->children.push_back(newNode);
-    }
   }
 
   void TreeViewer::LoadFromFile(const std::string &filename)
@@ -83,22 +45,27 @@ namespace Tree::Viewer
 
     std::string line;
     size_t depth = 0;
-    std::vector<size_t> currentChildIndexes;
+    std::vector<Node*> nodes;
 
     while (std::getline(stream, line))
     {
       Node *parsedNode = ParseToNode(line, depth);
-      ComputeDepth(currentChildIndexes, depth);
 
-      if (_node == nullptr)
+      if (depth == 0)
       {
-        _node = parsedNode;
-        continue;
+        nodes.push_back(parsedNode);
       }
-
-      Node *parent = FindCurrectNode(_node, currentChildIndexes, depth);
-      InsertNode(parent, parsedNode);
+      else
+      {
+        while (nodes.size() > depth) {
+          nodes.pop_back();
+        }
+        nodes.back()->AppendChild(parsedNode);
+        nodes.push_back(parsedNode);
+      }
     }
+
+    _node = nodes.empty() ? nullptr : nodes.front();
   }
 
   void TreeViewer::Show() const

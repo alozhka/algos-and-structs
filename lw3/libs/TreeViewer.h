@@ -19,6 +19,11 @@ namespace Tree::Viewer
     std::vector<Node *> children;
 
     Node(std::string value, const NodeType type) : value(std::move(value)), type(type) {}
+
+    void AppendChild(Node* node)
+    {
+      children.push_back(node);
+    }
   };
 
   class TreeViewer

@@ -1,39 +1,42 @@
 //
-// Created by sergey on 9/21/24.
+// Created by sergey on 10/4/24.
 //
 
 #include "Stack.h"
 
-void ClearStack(Node *&top)
-{
-  while (!IsEmpty(top))
-  {
-    const Data *data = Pop(top); // удаление узла
-    delete data; // удаление значений узла
-  }
-}
+#include <stdexcept>
+#include <utility>
 
-void Push(Node *&stack, const std::string &value, const size_t line)
+namespace Stack
 {
-  auto *node = new Node(new Data(value, line), stack);
-  stack = node;
-}
+  bool Stack::IsEmpty() const { return _node == nullptr; }
 
-Data *Pop(Node *&stack)
-{
-  if (stack == nullptr)
+  void Stack::Clear()
   {
-    return nullptr; // Пустой стек
+    while (!this->IsEmpty())
+    {
+      const Node *temp = _node;
+      _node = _node->next;
+      delete temp;
+    }
   }
 
-  Node *node = stack; // Сохраняем указатель на текущий узел
-  Data *data = node->data; // Сохраняем указатель на данные
-  stack = stack->next; // Переключаем стек на следующий узел
-  delete node;              // Удаляем узел
-  return data;
-}
+  std::string Stack::Pop()
+  {
+    if (this->IsEmpty())
+    {
+      throw std::runtime_error("Called pop of the empty stack");
+    }
+    const Node *temp = _node;
+    std::string data = std::move(_node->data);
+    _node = _node->next;
+    delete temp;
+    return data;
+  }
 
-bool IsEmpty(Node *&stack)
-{
-  return stack == nullptr;
-}
+  void Stack::Push(const std::string& data)
+  {
+    _node = new Node(data, _node);
+  }
+
+} // namespace Stack

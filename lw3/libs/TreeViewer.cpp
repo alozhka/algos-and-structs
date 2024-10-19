@@ -132,8 +132,12 @@ namespace Tree::Viewer
               if (std::get<0>(data) == node)
               {
                 std::cout << ReturnDepth(depth) << node->value << std::endl;
-                nodes.emplace(node->children[std::get<1>(data) - 1], depth + 1);
-                std::get<1>(data)--;
+                nodes.emplace(node->children[std::get<1>(data)], depth + 1);
+                //TODO: вынести логику пермутаций вне цикла
+                if (std::get<1>(data) > 0)
+                {
+                  std::get<1>(data)--;
+                }
               }
             }
           }

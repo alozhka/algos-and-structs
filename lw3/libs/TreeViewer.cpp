@@ -71,42 +71,33 @@ namespace Tree::Viewer
     _node = nodes.empty() ? nullptr : nodes.front();
   }
 
-  std::string PrintNodeType(const NodeType type)
+  std::string PrintDepth(const size_t depth)
   {
-    switch (type)
+    std::string returnStr;
+    for (size_t i = 0; i < depth; i++)
     {
-      case And:
-        return "[И]";
-      case Or:
-        return "[Или]";
-      case Default:
-      default:
-        return "";
+      returnStr += ".";
     }
+
+    return returnStr;
   }
 
   void TreeViewer::Show() const
   {
-    std::stack<std::tuple<Node *, std::string, bool>> nodes;
-    nodes.emplace(_node, "", true);
+    std::stack<std::tuple<Node *, size_t>> nodes;
+    std::vector<std::tuple<Node *, size_t>> orNodes;
+    nodes.emplace(_node, 0);
 
     while (!nodes.empty())
     {
-      auto [node, indent, isLast] = nodes.top();
+      auto [node, depth] = nodes.top();
       nodes.pop();
 
-      std::cout << indent;
-      if (isLast)
-        std::cout << "└──";
-      else
-        std::cout << "├──";
-
-      std::cout << " " << PrintNodeType(node->type) << " " << node->value << std::endl;
+      std::cout << PrintDepth(depth) << node->value << std::endl;
 
       for (int i = node->children.size() - 1; i >= 0; --i)
       {
-        std::string newIndent = indent + (isLast ? "   " : "|   ");
-        nodes.push({node->children[i], newIndent, i == node->children.size() - 1});
+        nodes.emplace(node->children[i], depth + 1);
       }
     }
   }

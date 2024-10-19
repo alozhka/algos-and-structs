@@ -71,7 +71,7 @@ namespace Tree::Viewer
     _node = nodes.empty() ? nullptr : nodes.front();
   }
 
-  std::string PrintDepth(const size_t depth)
+  std::string ReturnDepth(const size_t depth)
   {
     std::string returnStr;
     for (size_t i = 0; i < depth; i++)
@@ -82,24 +82,41 @@ namespace Tree::Viewer
     return returnStr;
   }
 
+  bool NotAllCompleted(std::vector<std::tuple<Node *, size_t>> &vector)
+  {
+    for (auto el: vector)
+    {
+      auto [node, current] = el;
+      if (node->children.size() > 0)
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   void TreeViewer::Show() const
   {
     std::stack<std::tuple<Node *, size_t>> nodes;
     std::vector<std::tuple<Node *, size_t>> orNodes;
-    nodes.emplace(_node, 0);
+    nodes.emplace(_node, _node->children.size() - 1);
 
-    while (!nodes.empty())
+    do
     {
-      auto [node, depth] = nodes.top();
-      nodes.pop();
-
-      std::cout << PrintDepth(depth) << node->value << std::endl;
-
-      for (int i = node->children.size() - 1; i >= 0; --i)
+      while (!nodes.empty())
       {
-        nodes.emplace(node->children[i], depth + 1);
+        auto [node, depth] = nodes.top();
+        nodes.pop();
+
+        std::cout << ReturnDepth(depth) << node->value << std::endl;
+
+        for (int i = node->children.size() - 1; i >= 0; --i)
+        {
+          nodes.emplace(node->children[i], depth + 1);
+        }
       }
-    }
+    } while (NotAllCompleted(orNodes));
   }
 
 } // namespace Tree::Viewer

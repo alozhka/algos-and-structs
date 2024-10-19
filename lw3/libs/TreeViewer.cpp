@@ -84,10 +84,10 @@ namespace Tree::Viewer
 
   bool NotAllCompleted(std::vector<std::tuple<Node *, size_t>> &vector)
   {
-    for (auto el: vector)
+    for (auto &el: vector)
     {
-      auto [node, current] = el;
-      if (node->children.size() > 0)
+      const size_t &current = std::get<1>(el);
+      if (current > 0)
       {
         return true;
       }
@@ -96,27 +96,65 @@ namespace Tree::Viewer
     return false;
   }
 
+  bool Contains(std::vector<std::tuple<Node *, size_t>> &orNodes, Node *&searchNode)
+  {
+    for (auto [node, depth]: orNodes)
+    {
+      if (node == searchNode)
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
   void TreeViewer::Show() const
   {
     std::stack<std::tuple<Node *, size_t>> nodes;
     std::vector<std::tuple<Node *, size_t>> orNodes;
-    nodes.emplace(_node, _node->children.size() - 1);
+    size_t amount = 0;
 
     do
     {
+      nodes.emplace(_node, 0);
+      std::cout << "Number " << ++amount << std::endl;
       while (!nodes.empty())
       {
         auto [node, depth] = nodes.top();
         nodes.pop();
 
-        std::cout << ReturnDepth(depth) << node->value << std::endl;
-
-        for (int i = node->children.size() - 1; i >= 0; --i)
+        if (node->type == Or)
         {
-          nodes.emplace(node->children[i], depth + 1);
+          if (Contains(orNodes, node))
+          {
+            for (auto &data: orNodes)
+            {
+              if (std::get<0>(data) == node)
+              {
+                std::cout << ReturnDepth(depth) << node->value << std::endl;
+                nodes.emplace(node->children[std::get<1>(data) - 1], depth + 1);
+                std::get<1>(data)--;
+              }
+            }
+          }
+          else
+          {
+            orNodes.emplace_back(node, node->children.size() - 1);
+            std::cout << ReturnDepth(depth) << node->value << std::endl;
+            nodes.emplace(node->children.back(), depth + 1);
+          }
+        }
+        else
+        {
+          std::cout << ReturnDepth(depth) << node->value << std::endl;
+          for (int i = node->children.size() - 1; i >= 0; --i)
+          {
+            nodes.emplace(node->children[i], depth + 1);
+          }
         }
       }
-    } while (NotAllCompleted(orNodes));
+    }
+    while (NotAllCompleted(orNodes));
   }
 
 } // namespace Tree::Viewer

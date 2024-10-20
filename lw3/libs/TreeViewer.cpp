@@ -96,32 +96,52 @@ namespace Tree::Viewer
     return false;
   }
 
-  bool GeneratePermutation(std::map<Node *, std::pair<size_t, size_t>> &map)
+  int getIndex(const std::vector<Node *> &v, const Node *node)
   {
-    auto it = map.rbegin();
-    size_t index = map.size() - 1;
+    for ( int i = 0; i < v.size(); i++)
+    {
+      if (v[i] == node)
+      {
+        return i;
+      }
+    }
 
-    while (it != map.rend())
+    return -1;
+  }
+
+  bool GeneratePermutationWithDependencies(std::map<Node *, std::pair<size_t, size_t>> &map,
+                                           std::map<Node *, Node *> &deps)
+  {
+    for (auto it = map.rbegin(); it != map.rend(); ++it)
     {
       Node *node = it->first;
-      if (size_t &value = map[node].first; value > 0)
+      auto &[currentIndex, maxIndex] = it->second;
+
+      Node *depParent = deps.contains(node) ? deps[node] : nullptr;
+      if (depParent)
       {
-        value--;
+        int childIndex = getIndex(depParent->children, node);
+        if (childIndex != currentIndex) // или узел не выбран
+        {
+          continue;
+        }
+      }
+
+      if (currentIndex > 0)
+      {
+        currentIndex--;
         return true;
       }
       else
       {
-        value = it->second.second;
+        currentIndex = maxIndex;
       }
-
-      ++it;
-      --index;
     }
 
     return false;
   }
 
-  std::map<Node *, std::pair<size_t, size_t>> FindOrNodes(Node *root)
+  std::map<Node *, std::pair<size_t, size_t>> FindOrNodesAndDependencies(Node *root, std::map<Node *, Node *> &deps)
   {
     std::map<Node *, std::pair<size_t, size_t>> orNodes;
     std::stack<Node *> nodes;
@@ -135,6 +155,11 @@ namespace Tree::Viewer
       if (node->type == Or)
       {
         orNodes[node] = {node->children.size() - 1, node->children.size() - 1};
+        for (auto child: node->children)
+        {
+          if (child->type == Or)
+            deps[child] = node; // ребёнок зависит от родителя
+        }
       }
 
       for (Node *child: std::ranges::reverse_view(node->children))
@@ -149,7 +174,8 @@ namespace Tree::Viewer
   void TreeViewer::Show() const
   {
     std::stack<std::tuple<Node *, size_t>> nodes;
-    std::map<Node *, std::pair<size_t, size_t>> orNodes = FindOrNodes(_node);
+    std::map<Node *, Node *> deps; // dependencies
+    std::map<Node *, std::pair<size_t, size_t>> orNodes = FindOrNodesAndDependencies(_node, deps);
     size_t amount = 0;
 
     do
@@ -176,7 +202,7 @@ namespace Tree::Viewer
         }
       }
     }
-    while (GeneratePermutation(orNodes));
+    while (GeneratePermutationWithDependencies(orNodes, deps));
   }
 
 } // namespace Tree::Viewer

@@ -138,7 +138,7 @@ namespace Tree::Viewer
         auto result = GetSubtrees(child, depth + 1);
         childrenSubtreesEntries.push_back(result);
       }
-      childrenSubtrees = GenerateCombinations(childrenSubtreesEntries, node->value);
+      childrenSubtrees = GenerateCombinations(childrenSubtreesEntries, std::string(depth, '.') + node->value);
     }
 
     return childrenSubtrees;

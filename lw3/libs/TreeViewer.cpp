@@ -81,26 +81,27 @@ namespace Tree::Viewer
   }
 
 
-  std::vector<std::string> GenerateCombinations(std::vector<std::vector<std::string>> &arrays)
+  std::vector<std::string> GenerateCombinations(std::vector<std::vector<std::string>> &arrays,
+                                                const std::string &prefix = "")
   {
-    std::vector<std::string> combinations = {""};
+    std::vector combinations = {prefix};
 
     for (const auto &array: arrays)
     {
       std::vector<std::string> newCombinations;
 
-      for (const auto &combination: combinations)
+      for (const std::string &combination: combinations)
       {
         for (const auto &element: array)
         {
-          newCombinations.push_back(combination + element);
+          newCombinations.push_back(combination + "\n" + element);
         }
       }
 
       combinations = newCombinations;
     }
 
-    return  combinations;
+    return combinations;
   }
 
 
@@ -112,15 +113,16 @@ namespace Tree::Viewer
     }
 
     std::vector<std::string> childrenSubtrees;
-    std::vector<std::vector<std::string>> childrenEntries; // список списков вариантов поддерева текущего узла
+    std::vector<std::vector<std::string>> childrenSubtreesEntries; // список списков вариантов поддерева текущего узла
+
     if (node->type == Or)
     {
       for (const Node *child: node->children)
       {
         auto result = GetSubtrees(child, depth + 1);
-        childrenEntries.push_back(result);
+        childrenSubtreesEntries.push_back(result);
       }
-      for (const auto &child: childrenEntries)
+      for (const auto &child: childrenSubtreesEntries)
       {
         for (const auto &subEntry: child)
         {
@@ -134,23 +136,9 @@ namespace Tree::Viewer
       for (const Node *child: node->children)
       {
         auto result = GetSubtrees(child, depth + 1);
-        childrenEntries.push_back(result);
+        childrenSubtreesEntries.push_back(result);
       }
-
-      for (int i = 0; i < childrenEntries.size() - 1; i++) // [["A", "B"], ["C", "D"], ["E", "F"]]
-      {
-        for (const auto &leftSubEntry: childrenEntries[i]) // ["A", "B"]
-        {
-          std::string entry = std::string(depth, '.') + node->value + "\n" + leftSubEntry + "\n";
-          for (int j = i + 1; j < childrenEntries.size(); j++) // ["C", "D"], ["E", "F"]
-          {
-            for (const auto &rightSubEntry: childrenEntries[j]) // ["C", "D"]
-            {
-              childrenSubtrees.push_back(entry + rightSubEntry); // "A" и "C"
-            }
-          }
-        }
-      }
+      childrenSubtrees = GenerateCombinations(childrenSubtreesEntries, node->value);
     }
 
     return childrenSubtrees;

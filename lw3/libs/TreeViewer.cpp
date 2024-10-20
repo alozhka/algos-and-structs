@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <ranges>
 #include <stack>
 
@@ -82,11 +83,10 @@ namespace Tree::Viewer
     return returnStr;
   }
 
-  bool NotAllCompleted(std::vector<std::tuple<Node *, size_t>> &vector)
+  bool NotAllCompleted(std::map<Node *, size_t> &map)
   {
-    for (auto &el: vector)
+    for (const auto &current: map | std::views::values)
     {
-      const size_t &current = std::get<1>(el);
       if (current > 0)
       {
         return true;
@@ -96,22 +96,35 @@ namespace Tree::Viewer
     return false;
   }
 
-  bool Contains(std::vector<std::tuple<Node *, size_t>> &orNodes, Node *&searchNode)
+  std::map<Node *, size_t> FindOrNodes(Node *root)
   {
-    for (auto [node, depth]: orNodes)
+    std::map<Node *, size_t> orNodes;
+    std::stack<Node *> nodes;
+    nodes.push(root);
+
+    while (!nodes.empty())
     {
-      if (node == searchNode)
+      Node *node = nodes.top();
+      nodes.pop();
+
+      if (node->type == Or)
       {
-        return true;
+        orNodes[node] = node->children.size() - 1;
+      }
+
+      for (Node *child: std::ranges::reverse_view(node->children))
+      {
+        nodes.push(child);
       }
     }
-    return false;
+
+    return orNodes;
   }
 
   void TreeViewer::Show() const
   {
     std::stack<std::tuple<Node *, size_t>> nodes;
-    std::vector<std::tuple<Node *, size_t>> orNodes;
+    std::map<Node *, size_t> orNodes = FindOrNodes(_node);
     size_t amount = 0;
 
     do
@@ -123,37 +136,37 @@ namespace Tree::Viewer
         auto [node, depth] = nodes.top();
         nodes.pop();
 
+        std::cout << ReturnDepth(depth) << node->value << std::endl;
         if (node->type == Or)
         {
-          if (Contains(orNodes, node))
+          if (orNodes.contains(node))
           {
-            for (auto &data: orNodes)
+            size_t &current = orNodes[node];
+            nodes.emplace(node->children[current], depth + 1);
+            // TODO: вынести логику пермутаций вне цикла
+            if (current > 0)
             {
-              if (std::get<0>(data) == node)
-              {
-                std::cout << ReturnDepth(depth) << node->value << std::endl;
-                nodes.emplace(node->children[std::get<1>(data)], depth + 1);
-                //TODO: вынести логику пермутаций вне цикла
-                if (std::get<1>(data) > 0)
-                {
-                  std::get<1>(data)--;
-                }
-              }
+              current--;
             }
           }
-          else
+          for (auto &data: orNodes)
           {
-            orNodes.emplace_back(node, node->children.size() - 1);
-            std::cout << ReturnDepth(depth) << node->value << std::endl;
-            nodes.emplace(node->children.back(), depth + 1);
+            if (std::get<0>(data) == node)
+            {
+              nodes.emplace(node->children[std::get<1>(data)], depth + 1);
+              // TODO: вынести логику пермутаций вне цикла
+              if (std::get<1>(data) > 0)
+              {
+                std::get<1>(data)--;
+              }
+            }
           }
         }
         else
         {
-          std::cout << ReturnDepth(depth) << node->value << std::endl;
-          for (int i = node->children.size() - 1; i >= 0; --i)
+          for (Node *child: std::ranges::reverse_view(node->children))
           {
-            nodes.emplace(node->children[i], depth + 1);
+            nodes.emplace(child, depth + 1);
           }
         }
       }

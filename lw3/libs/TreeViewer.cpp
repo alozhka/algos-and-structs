@@ -89,15 +89,21 @@ namespace Tree::Viewer
     }
 
     std::vector<std::string> childrenSubtrees;
-    for (const Node *child: node->children)
+    std::vector<std::vector<std::string>> childrenEntries; // список списков вариантов поддерева текущего узла
+    if (node->type == Or)
     {
-      auto result = GetSubtrees(child, depth + 1);
-      std::string returnstr;
-      for (const std::string &str: result)
+      for (const Node *child: node->children)
       {
-        returnstr += str + "\n";
+        auto result = GetSubtrees(child, depth + 1);
+        childrenEntries.push_back(result);
       }
-      childrenSubtrees.push_back(returnstr);
+      for (const auto &child: childrenEntries)
+      {
+        for (const auto &subEntry: child)
+        {
+          childrenSubtrees.push_back(std::string(depth, '.') + node->value + "\n" + subEntry);
+        }
+      }
     }
 
     return childrenSubtrees;
@@ -106,7 +112,7 @@ namespace Tree::Viewer
   void TreeViewer::Show() const
   {
     const std::vector<std::string> subtrees = GetSubtrees(_node);
-    for (int i = 0; i < subtrees.size() - 1; i++)
+    for (int i = 0; i < subtrees.size(); i++)
     {
       std::cout << "Number " << i + 1 << std::endl << subtrees[i] << std::endl;
     }

@@ -83,9 +83,9 @@ namespace Tree::Viewer
     return returnStr;
   }
 
-  bool NotAllCompleted(std::map<Node *, size_t> &map)
+  bool NotAllCompleted(std::map<Node *, std::pair<size_t, size_t>> &map)
   {
-    for (const auto &current: map | std::views::values)
+    for (const auto &[current, _]: map | std::views::values)
     {
       if (current > 0)
       {
@@ -96,9 +96,34 @@ namespace Tree::Viewer
     return false;
   }
 
-  std::map<Node *, size_t> FindOrNodes(Node *root)
+  bool GeneratePermutation(std::map<Node *, std::pair<size_t, size_t>> &map)
   {
-    std::map<Node *, size_t> orNodes;
+    auto it = map.rbegin();
+    size_t index = map.size() - 1;
+
+    while (it != map.rend())
+    {
+      Node *node = it->first;
+      if (size_t &value = map[node].first; value > 0)
+      {
+        value--;
+        return true;
+      }
+      else
+      {
+        value = it->second.second;
+      }
+
+      ++it;
+      --index;
+    }
+
+    return false;
+  }
+
+  std::map<Node *, std::pair<size_t, size_t>> FindOrNodes(Node *root)
+  {
+    std::map<Node *, std::pair<size_t, size_t>> orNodes;
     std::stack<Node *> nodes;
     nodes.push(root);
 
@@ -109,7 +134,7 @@ namespace Tree::Viewer
 
       if (node->type == Or)
       {
-        orNodes[node] = node->children.size() - 1;
+        orNodes[node] = {node->children.size() - 1, node->children.size() - 1};
       }
 
       for (Node *child: std::ranges::reverse_view(node->children))
@@ -124,7 +149,7 @@ namespace Tree::Viewer
   void TreeViewer::Show() const
   {
     std::stack<std::tuple<Node *, size_t>> nodes;
-    std::map<Node *, size_t> orNodes = FindOrNodes(_node);
+    std::map<Node *, std::pair<size_t, size_t>> orNodes = FindOrNodes(_node);
     size_t amount = 0;
 
     do
@@ -139,28 +164,8 @@ namespace Tree::Viewer
         std::cout << ReturnDepth(depth) << node->value << std::endl;
         if (node->type == Or)
         {
-          if (orNodes.contains(node))
-          {
-            size_t &current = orNodes[node];
-            nodes.emplace(node->children[current], depth + 1);
-            // TODO: вынести логику пермутаций вне цикла
-            if (current > 0)
-            {
-              current--;
-            }
-          }
-          for (auto &data: orNodes)
-          {
-            if (std::get<0>(data) == node)
-            {
-              nodes.emplace(node->children[std::get<1>(data)], depth + 1);
-              // TODO: вынести логику пермутаций вне цикла
-              if (std::get<1>(data) > 0)
-              {
-                std::get<1>(data)--;
-              }
-            }
-          }
+          auto &[current, _] = orNodes[node];
+          nodes.emplace(node->children[current], depth + 1);
         }
         else
         {
@@ -171,7 +176,7 @@ namespace Tree::Viewer
         }
       }
     }
-    while (NotAllCompleted(orNodes));
+    while (GeneratePermutation(orNodes));
   }
 
 } // namespace Tree::Viewer

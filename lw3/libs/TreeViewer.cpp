@@ -6,9 +6,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <map>
-#include <ranges>
-#include <stack>
 
 namespace Tree::Viewer
 {
@@ -83,126 +80,36 @@ namespace Tree::Viewer
     return returnStr;
   }
 
-  bool NotAllCompleted(std::map<Node *, std::pair<size_t, size_t>> &map)
+
+  std::vector<std::string> GetSubtrees(const Node *node, const size_t depth = 0)
   {
-    for (const auto &[current, _]: map | std::views::values)
+    if (node->type == Default)
     {
-      if (current > 0)
-      {
-        return true;
-      }
+      return std::vector{std::string(depth, '.') + node->value};
     }
 
-    return false;
-  }
-
-  int getIndex(const std::vector<Node *> &v, const Node *node)
-  {
-    for ( int i = 0; i < v.size(); i++)
+    std::vector<std::string> childrenSubtrees;
+    for (const Node *child: node->children)
     {
-      if (v[i] == node)
+      auto result = GetSubtrees(child, depth + 1);
+      std::string returnstr;
+      for (const std::string &str: result)
       {
-        return i;
+        returnstr += str + "\n";
       }
+      childrenSubtrees.push_back(returnstr);
     }
 
-    return -1;
-  }
-
-  bool GeneratePermutationWithDependencies(std::map<Node *, std::pair<size_t, size_t>> &map,
-                                           std::map<Node *, Node *> &deps)
-  {
-    for (auto it = map.rbegin(); it != map.rend(); ++it)
-    {
-      Node *node = it->first;
-      auto &[currentIndex, maxIndex] = it->second;
-
-      Node *depParent = deps.contains(node) ? deps[node] : nullptr;
-      if (depParent)
-      {
-        int childIndex = getIndex(depParent->children, node);
-        if (childIndex != currentIndex) // или узел не выбран
-        {
-          continue;
-        }
-      }
-
-      if (currentIndex > 0)
-      {
-        currentIndex--;
-        return true;
-      }
-      else
-      {
-        currentIndex = maxIndex;
-      }
-    }
-
-    return false;
-  }
-
-  std::map<Node *, std::pair<size_t, size_t>> FindOrNodesAndDependencies(Node *root, std::map<Node *, Node *> &deps)
-  {
-    std::map<Node *, std::pair<size_t, size_t>> orNodes;
-    std::stack<Node *> nodes;
-    nodes.push(root);
-
-    while (!nodes.empty())
-    {
-      Node *node = nodes.top();
-      nodes.pop();
-
-      if (node->type == Or)
-      {
-        orNodes[node] = {node->children.size() - 1, node->children.size() - 1};
-        for (auto child: node->children)
-        {
-          if (child->type == Or)
-            deps[child] = node; // ребёнок зависит от родителя
-        }
-      }
-
-      for (Node *child: std::ranges::reverse_view(node->children))
-      {
-        nodes.push(child);
-      }
-    }
-
-    return orNodes;
+    return childrenSubtrees;
   }
 
   void TreeViewer::Show() const
   {
-    std::stack<std::tuple<Node *, size_t>> nodes;
-    std::map<Node *, Node *> deps; // dependencies
-    std::map<Node *, std::pair<size_t, size_t>> orNodes = FindOrNodesAndDependencies(_node, deps);
-    size_t amount = 0;
-
-    do
+    const std::vector<std::string> subtrees = GetSubtrees(_node);
+    for (int i = 0; i < subtrees.size() - 1; i++)
     {
-      nodes.emplace(_node, 0);
-      std::cout << "Number " << ++amount << std::endl;
-      while (!nodes.empty())
-      {
-        auto [node, depth] = nodes.top();
-        nodes.pop();
-
-        std::cout << ReturnDepth(depth) << node->value << std::endl;
-        if (node->type == Or)
-        {
-          auto &[current, _] = orNodes[node];
-          nodes.emplace(node->children[current], depth + 1);
-        }
-        else
-        {
-          for (Node *child: std::ranges::reverse_view(node->children))
-          {
-            nodes.emplace(child, depth + 1);
-          }
-        }
-      }
+      std::cout << "Number " << i + 1 << std::endl << subtrees[i] << std::endl;
     }
-    while (GeneratePermutationWithDependencies(orNodes, deps));
   }
 
 } // namespace Tree::Viewer

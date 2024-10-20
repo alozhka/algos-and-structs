@@ -81,6 +81,29 @@ namespace Tree::Viewer
   }
 
 
+  std::vector<std::string> GenerateCombinations(std::vector<std::vector<std::string>> &arrays)
+  {
+    std::vector<std::string> combinations = {""};
+
+    for (const auto &array: arrays)
+    {
+      std::vector<std::string> newCombinations;
+
+      for (const auto &combination: combinations)
+      {
+        for (const auto &element: array)
+        {
+          newCombinations.push_back(combination + element);
+        }
+      }
+
+      combinations = newCombinations;
+    }
+
+    return  combinations;
+  }
+
+
   std::vector<std::string> GetSubtrees(const Node *node, const size_t depth = 0)
   {
     if (node->type == Default)
@@ -102,6 +125,30 @@ namespace Tree::Viewer
         for (const auto &subEntry: child)
         {
           childrenSubtrees.push_back(std::string(depth, '.') + node->value + "\n" + subEntry);
+        }
+      }
+    }
+
+    if (node->type == And)
+    {
+      for (const Node *child: node->children)
+      {
+        auto result = GetSubtrees(child, depth + 1);
+        childrenEntries.push_back(result);
+      }
+
+      for (int i = 0; i < childrenEntries.size() - 1; i++) // [["A", "B"], ["C", "D"], ["E", "F"]]
+      {
+        for (const auto &leftSubEntry: childrenEntries[i]) // ["A", "B"]
+        {
+          std::string entry = std::string(depth, '.') + node->value + "\n" + leftSubEntry + "\n";
+          for (int j = i + 1; j < childrenEntries.size(); j++) // ["C", "D"], ["E", "F"]
+          {
+            for (const auto &rightSubEntry: childrenEntries[j]) // ["C", "D"]
+            {
+              childrenSubtrees.push_back(entry + rightSubEntry); // "A" и "C"
+            }
+          }
         }
       }
     }

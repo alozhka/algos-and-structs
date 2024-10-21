@@ -21,6 +21,7 @@ int main(const int argc, char* argv[])
     std::cerr << "Не передано имя файла";
     return 1;
   }
-  Analyzer::Pascal::Analyze(argv[1]);
+  Pascal::CodeAnalyzer analyzer;
+  analyzer.Analyze(argv[1]);
   return 0;
 }

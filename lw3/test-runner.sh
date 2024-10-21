@@ -1,0 +1,1 @@
+./cmake-build-debug/lw3 ../tests/correct.txt

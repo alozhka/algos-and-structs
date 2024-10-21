@@ -173,7 +173,6 @@ namespace Pascal
         }
       }
     }
-
     if (!_stack.IsEmpty())
     {
       std::cout << "Ошибка вложенности в строке " << lineNumber << std::endl;

@@ -15,8 +15,10 @@ struct Branch
 
 class Graph
 {
-private:
   std::vector<Branch> branches;
+public:
+  void AddBranch(std::string name, size_t node1, size_t node2);
+  std::vector<std::string> FindPaths(size_t node1, size_t node2);
 };
 
 

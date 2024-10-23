@@ -5,4 +5,5 @@ set(CMAKE_CXX_STANDARD 26)
 
 add_executable(lw4 main.cpp
         libs/Graph.cpp
-        libs/Graph.h)
+        libs/Graph.h
+)

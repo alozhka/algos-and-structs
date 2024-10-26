@@ -13,6 +13,7 @@
 
 
 #include <iostream>
+#include <iterator>
 
 #include "libs/Graph.h"
 
@@ -28,11 +29,11 @@ int main(const int argc, const char* argv[])
   {
     Graph graph;
     graph.ImportFromDefaultConfig();
-    std::vector<std::vector<size_t>> paths = graph.FindPaths(reinterpret_cast<size_t>(argv[0]), reinterpret_cast<size_t>(argv[1]));
+    const std::vector<std::vector<size_t>> paths = graph.FindPaths(std::stoull(argv[1]), std::stoull(argv[2]));
     for (size_t i = 0; i < paths.size(); ++i)
     {
       std::cout << "Путь 1\n";
-
+      std::ranges::copy(paths[i], std::ostream_iterator<size_t>(std::cout, " "));
     }
   }
   catch (std::exception &e)

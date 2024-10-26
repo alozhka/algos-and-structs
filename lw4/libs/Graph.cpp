@@ -5,6 +5,7 @@
 #include "Graph.h"
 
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <stack>
 
@@ -34,23 +35,24 @@ void Graph::ParseLineToBranch(const std::string &s)
 
 void Graph::BranchesToAdjMatrix()
 {
-  size_t maxNode = 0;
+  size_t vertexAmount = 0;
   for (const Branch &branch: _branches)
   {
-    if (maxNode < branch.node1)
+    if (vertexAmount < branch.node1)
     {
-      maxNode = branch.node1;
+      vertexAmount = branch.node1;
     }
-    if (maxNode < branch.node2)
+    if (vertexAmount < branch.node2)
     {
-      maxNode = branch.node2;
+      vertexAmount = branch.node2;
     }
   }
+  vertexAmount++;
 
-  _matrix.resize(maxNode);
+  _matrix.resize(vertexAmount);
   for (auto &m: _matrix)
   {
-    m.resize(44);
+    m.resize(vertexAmount);
   }
 
   for (const Branch &branch: _branches)
@@ -88,7 +90,7 @@ void Graph::ImportFromDefaultConfig()
 std::vector<std::vector<size_t>> Graph::FindPaths(const size_t start, const size_t end)
 {
   std::stack<std::pair<size_t, std::vector<size_t>>> stack;
-  stack.emplace(start, std::vector<size_t>(start));
+  stack.emplace(start, std::vector{start});
   std::vector<std::vector<size_t>> paths;
 
   while (!stack.empty())
@@ -102,11 +104,14 @@ std::vector<std::vector<size_t>> Graph::FindPaths(const size_t start, const size
       continue;
     }
 
-    for (size_t vertex : _matrix[currentIndex])
+    for (size_t vertex: _matrix[currentIndex])
     {
-      std::vector<size_t> newPath = path;
-      newPath.push_back(vertex);
-      stack.emplace(vertex, newPath);
+      if (vertex > 0)
+      {
+        std::vector<size_t> newPath = path;
+        newPath.push_back(vertex);
+        stack.emplace(vertex, newPath);
+      }
     }
   }
 

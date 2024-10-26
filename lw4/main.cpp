@@ -14,7 +14,26 @@
 
 #include <iostream>
 
-int main() {
-  std::cout << "Hello, World!" << std::endl;
+#include "libs/Graph.h"
+
+int main(const int argc, const char* argv[])
+{
+  if (argc < 3)
+  {
+    std::cerr << "Указаны не все данные";
+    return 1;
+  }
+
+  try
+  {
+    Graph graph;
+    graph.ImportFromDefaultConfig();
+    std::vector<std::vector<size_t>> paths = graph.FindPaths(reinterpret_cast<size_t>(argv[0]), reinterpret_cast<size_t>(argv[1]));
+  }
+  catch (std::exception &e)
+  {
+    std::cerr << e.what() << std::endl;
+    return 1;
+  }
   return 0;
 }

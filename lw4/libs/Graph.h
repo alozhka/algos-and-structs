@@ -18,15 +18,13 @@ struct Branch
 class Graph
 {
   std::vector<Branch> _branches;
-  std::vector<std::vector<size_t>> _matrix;
 
   void AddBranch(size_t node1, size_t node2, const std::string &name);
   void ParseLineToBranch(const std::string &s);
-  void BranchesToAdjMatrix();
 
 public:
   void ImportFromDefaultConfig();
-  std::vector<std::vector<size_t>> FindPaths(size_t start, size_t end);
+  std::vector<std::vector<Branch>> FindPaths(size_t start, size_t end);
 };
 
 

@@ -30,34 +30,7 @@ void Graph::ParseLineToBranch(const std::string &s)
   for (size_t sourceNode: sourcesIds)
   {
     _branches.emplace_back(sourceNode, std::stoi(parts[2]), parts[0]);
-  }
-}
-
-void Graph::BranchesToAdjMatrix()
-{
-  size_t vertexAmount = 0;
-  for (const Branch &branch: _branches)
-  {
-    if (vertexAmount < branch.node1)
-    {
-      vertexAmount = branch.node1;
-    }
-    if (vertexAmount < branch.node2)
-    {
-      vertexAmount = branch.node2;
-    }
-  }
-  vertexAmount++;
-
-  _matrix.resize(vertexAmount);
-  for (auto &m: _matrix)
-  {
-    m.resize(vertexAmount);
-  }
-
-  for (const Branch &branch: _branches)
-  {
-    _matrix[branch.node1][branch.node2] = 1;
+    _branches.emplace_back(std::stoi(parts[2]), sourceNode, parts[0]);
   }
 }
 
@@ -70,7 +43,7 @@ void Graph::AddBranch(size_t node1, size_t node2, const std::string &name)
 
 void Graph::ImportFromDefaultConfig()
 {
-  std::ifstream stream("../data/PHYS.TXT");
+  std::ifstream stream("../data/test.TXT");
 
   if (!stream.is_open())
   {
@@ -82,35 +55,38 @@ void Graph::ImportFromDefaultConfig()
   {
     ParseLineToBranch(line);
   }
-
-  BranchesToAdjMatrix();
 }
 
-
-std::vector<std::vector<size_t>> Graph::FindPaths(const size_t start, const size_t end)
+bool BranchesEqual(const Branch &left, const Branch &right)
 {
-  std::stack<std::pair<size_t, std::vector<size_t>>> stack;
-  stack.emplace(start, std::vector{start});
-  std::vector<std::vector<size_t>> paths;
+  return left.node1 == left.node1 && left.node2 == left.node2 && left.name == right.name;
+}
+
+std::vector<std::vector<Branch>> Graph::FindPaths(const size_t start, const size_t end)
+{
+  std::stack<std::pair<size_t, std::vector<Branch>>> stack;
+  stack.emplace(start, std::vector<Branch>{});
+  std::vector<std::vector<Branch>> paths;
 
   while (!stack.empty())
   {
-    auto &[currentIndex, path] = stack.top();
+    auto [currentNodeIndex, currentNodePath] = stack.top();
     stack.pop();
 
-    if (currentIndex == end)
+    if (currentNodeIndex == end)
     {
-      paths.push_back(path);
+      paths.push_back(currentNodePath);
       continue;
     }
 
-    for (size_t vertex: _matrix[currentIndex])
+    Branch prevBranch = currentNodePath.size() > 0 ? currentNodePath.back() : Branch(0, 0, "");
+    for (const Branch &childBranch: _branches)
     {
-      if (vertex > 0)
+      if (childBranch.node1 == currentNodeIndex && !BranchesEqual(childBranch, prevBranch)) // не то же ребро
       {
-        std::vector<size_t> newPath = path;
-        newPath.push_back(vertex);
-        stack.emplace(vertex, newPath);
+        std::vector<Branch> newPath = currentNodePath;
+        newPath.push_back(childBranch);
+        stack.emplace(childBranch.node2, newPath);
       }
     }
   }

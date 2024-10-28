@@ -13,11 +13,10 @@
 
 
 #include <iostream>
-#include <iterator>
 
 #include "libs/Graph.h"
 
-int main(const int argc, const char* argv[])
+int main(const int argc, const char *argv[])
 {
   if (argc < 3)
   {
@@ -29,11 +28,15 @@ int main(const int argc, const char* argv[])
   {
     Graph graph;
     graph.ImportFromDefaultConfig();
-    const std::vector<std::vector<size_t>> paths = graph.FindPaths(std::stoull(argv[1]), std::stoull(argv[2]));
+    const std::vector<std::vector<Branch>> paths = graph.FindPaths(std::stoull(argv[1]), std::stoull(argv[2]));
     for (size_t i = 0; i < paths.size(); ++i)
     {
-      std::cout << "Путь 1\n";
-      std::ranges::copy(paths[i], std::ostream_iterator<size_t>(std::cout, " "));
+      std::cout << "Путь " << i << std::endl;
+      for (auto &branch : paths[i])
+      {
+        std::cout << branch.node1 << " " << branch.name << " " << branch.node2 << " ";
+      }
+      std::cout << std::endl;
     }
   }
   catch (std::exception &e)

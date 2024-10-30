@@ -82,7 +82,8 @@ std::vector<std::vector<Branch>> Graph::FindPaths(const size_t start, const size
     Branch prevBranch = currentNodePath.size() > 0 ? currentNodePath.back() : Branch(0, 0, "");
     for (const Branch &childBranch: _branches)
     {
-      if (childBranch.node1 == currentNodeIndex && !BranchesEqual(childBranch, prevBranch)) // не то же ребро
+      if (childBranch.node1 == currentNodeIndex &&
+          childBranch.node2 != prevBranch.node1) // чтобы не вернуться в прошлую вершину
       {
         std::vector<Branch> newPath = currentNodePath;
         newPath.push_back(childBranch);

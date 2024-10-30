@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <stack>
 
@@ -54,7 +55,7 @@ void Graph::AddBranch(size_t node1, size_t node2, const std::string &name)
 
 void Graph::ImportFromDefaultConfig()
 {
-  std::ifstream stream("../data/test.TXT");
+  std::ifstream stream("../data/PHYS.TXT");
 
   if (!stream.is_open())
   {
@@ -89,6 +90,7 @@ std::vector<std::vector<Branch>> Graph::FindPaths(const size_t start, const size
 {
   std::stack<std::pair<size_t, std::vector<Branch>>> stack;
   stack.emplace(start, std::vector<Branch>{});
+  std::set<std::string> visited;
   std::vector<std::vector<Branch>> paths;
 
   while (!stack.empty())
@@ -106,8 +108,10 @@ std::vector<std::vector<Branch>> Graph::FindPaths(const size_t start, const size
     for (const Branch &childBranch: _branches)
     {
       if (childBranch.node1 == currentNodeIndex &&
-          childBranch.node2 != prevBranch.node1) // чтобы не вернуться в прошлую вершину
+          childBranch.node2 != prevBranch.node1 &&
+          !visited.contains(childBranch.name)) // чтобы не вернуться в прошлую вершину
       {
+        visited.insert(childBranch.name);
         std::vector<Branch> newPath = currentNodePath;
         newPath.push_back(childBranch);
         stack.emplace(childBranch.node2, newPath);

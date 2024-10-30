@@ -4,6 +4,7 @@
 
 #ifndef GRAPH_H
 #define GRAPH_H
+#include <map>
 #include <string>
 #include <vector>
 
@@ -18,13 +19,16 @@ struct Branch
 class Graph
 {
   std::vector<Branch> _branches;
+  std::map<int, std::string> _vertexes;
 
   void AddBranch(size_t node1, size_t node2, const std::string &name);
   void ParseLineToBranch(const std::string &s);
+  void ParseLineToNode(const std::string &s);
 
 public:
   void ImportFromDefaultConfig();
   std::vector<std::vector<Branch>> FindPaths(size_t start, size_t end);
+  void PrintPaths(const std::vector<std::vector<Branch>> &paths);
 };
 
 

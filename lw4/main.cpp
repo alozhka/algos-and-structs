@@ -29,15 +29,7 @@ int main(const int argc, const char *argv[])
     Graph graph;
     graph.ImportFromDefaultConfig();
     const std::vector<std::vector<Branch>> paths = graph.FindPaths(std::stoull(argv[1]), std::stoull(argv[2]));
-    for (size_t i = 0; i < paths.size(); ++i)
-    {
-      std::cout << "Путь " << i + 1 << std::endl;
-      for (auto &branch : paths[i])
-      {
-        std::cout << branch.node1 << " " << branch.name << " " << branch.node2 << " ";
-      }
-      std::cout << std::endl;
-    }
+    graph.PrintPaths(paths);
   }
   catch (std::exception &e)
   {

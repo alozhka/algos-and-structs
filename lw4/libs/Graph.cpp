@@ -34,6 +34,17 @@ void Graph::ParseLineToBranch(const std::string &s)
   }
 }
 
+void Graph::ParseLineToNode(const std::string &s)
+{
+  std::string parts[2];
+
+  int divideIndex = s.find(':');
+  parts[0] = s.substr(0, divideIndex);
+  parts[1] = s.substr(divideIndex + 1, s.length() - divideIndex);
+
+  _vertexes[std::stoi(parts[0])] = parts[1];
+}
+
 
 void Graph::AddBranch(size_t node1, size_t node2, const std::string &name)
 {
@@ -47,13 +58,25 @@ void Graph::ImportFromDefaultConfig()
 
   if (!stream.is_open())
   {
-    throw std::invalid_argument("Ошибка при открытии файла");
+    throw std::invalid_argument("Ошибка при открытии списка физических эффектов");
   }
 
   std::string line;
   while (std::getline(stream, line))
   {
     ParseLineToBranch(line);
+  }
+
+  stream.close();
+  stream.open("../data/P_NAME.TXT");
+
+  if (!stream.is_open())
+  {
+    throw std::invalid_argument("Ошибка при открытии списка физических величин");
+  }
+  while (std::getline(stream, line))
+  {
+    ParseLineToNode(line);
   }
 }
 
@@ -95,3 +118,18 @@ std::vector<std::vector<Branch>> Graph::FindPaths(const size_t start, const size
   return paths;
 }
 
+void Graph::PrintPaths(const std::vector<std::vector<Branch>> &paths)
+{
+  for (size_t i = 0; i < paths.size(); ++i)
+  {
+    std::cout << "Путь " << i + 1 << std::endl;
+    std::cout << _vertexes[paths[i][0].node1] << " => ";
+    for (auto &branch : paths[i])
+    {
+      // дебаг: std::cout << _vertexes[branch.node1] << " => " << branch.name << " => " << _vertexes[branch.node2] << " ";
+      std::cout << branch.name << " => ";
+    }
+    std::cout << _vertexes[paths[i].back().node2] << std::endl;
+    std::cout << std::endl;
+  }
+}

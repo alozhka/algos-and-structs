@@ -30,7 +30,10 @@ void Graph::ParseLineToBranch(const std::string &s)
 
   for (size_t sourceNode: sourcesIds)
   {
-    _branches.emplace_back(sourceNode, std::stoi(parts[2]), parts[0]);
+    if (sourceNode != std::stoi(parts[2]))
+    {
+      _branches.emplace_back(sourceNode, std::stoi(parts[2]), parts[0]);
+    }
   }
 }
 
@@ -113,7 +116,7 @@ std::vector<std::vector<size_t>> Graph::FindPaths(const size_t start, const size
   {
     auto [currentNodeIndex, currentNodePath] = stack.top();
     stack.pop();
-    if (currentNodeIndex == end)
+    if (currentNodeIndex == end) // Если <= 5 вершин в пути и последний == end
     {
       paths.push_back(currentNodePath);
       continue;
@@ -121,7 +124,7 @@ std::vector<std::vector<size_t>> Graph::FindPaths(const size_t start, const size
 
     visited.insert(currentNodeIndex);
 
-    if (currentNodePath.size() > 4) // 5 звена отвалятся на проверке выше
+    if (currentNodePath.size() > 4) // Если уже 5 вершин, то даже если мы найдём новый путь, то их уже будет 6
     {
       continue;
     }
@@ -136,7 +139,7 @@ std::vector<std::vector<size_t>> Graph::FindPaths(const size_t start, const size
         stack.emplace(i, pathToI);
       }
     }
-   }
+  }
 
   return paths;
 }

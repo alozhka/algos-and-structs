@@ -58,8 +58,7 @@ void Graph::ParseLineToNode(const std::string &s)
   const int divideIndex = s.find(':');
   parts[0] = s.substr(0, divideIndex);
   parts[1] = s.substr(divideIndex + 1, s.length() - divideIndex);
-
-  _vertexes[std::stoi(parts[0])] = parts[1];
+  _physicEffects.push_back(parts[1]);
 }
 
 void Graph::AddBranch(size_t node1, size_t node2, const std::string &name)
@@ -90,7 +89,7 @@ void Graph::ImportFromDefaultConfig()
       maxId = branch.node2;
   }
 
-  _matrix.resize(++maxId);
+  _matrix.resize(maxId + 1);
   for (std::vector<size_t> &vector: _matrix)
   {
     vector.resize(maxId);
@@ -110,14 +109,13 @@ void Graph::ImportFromDefaultConfig()
   }
 }
 
-std::vector<std::vector<size_t>> Graph::FindPaths(const size_t start, const size_t end)
+void Graph::FindPaths(const size_t start, const size_t end)
 {
   std::set<size_t> visited;
   std::stack<std::pair<size_t, std::vector<size_t>>> stack;
 
   FindPathsRecursiverly(start, end, {});
   SortByNestingVectorSize(_paths);
-  return _paths;
 }
 
 void Graph::FindPathsRecursiverly(const size_t start, const size_t end, std::vector<std::size_t> path)
@@ -147,19 +145,60 @@ void Graph::FindPathsRecursiverly(const size_t start, const size_t end, std::vec
   _visited.extract(start); // убираем посещение для других рекурсий
 }
 
-void Graph::PrintPaths(const std::vector<std::vector<Branch>> &paths)
+std::vector<std::string> GenerateCombinations(std::vector<std::vector<std::string>> &arrays)
 {
-  for (size_t i = 0; i < paths.size(); ++i)
+  std::vector<std::string> combinations = {""};
+
+  for (const auto &array: arrays)
   {
-    std::cout << "Путь " << i + 1 << std::endl;
-    std::cout << _vertexes[paths[i][0].node1] << " => ";
-    for (auto &branch: paths[i])
+    std::vector<std::string> newCombinations;
+
+    for (const std::string &combination: combinations)
     {
-      // дебаг: std::cout << _vertexes[branch.node1] << " => " << branch.name << " => " << _vertexes[branch.node2] << "
-      // ";
-      std::cout << branch.name << " => ";
+      for (const auto &element: array)
+      {
+        newCombinations.push_back(combination + " ⇒ " + element);
+      }
     }
-    std::cout << _vertexes[paths[i].back().node2] << std::endl;
-    std::cout << std::endl;
+
+    combinations = newCombinations;
+  }
+
+  for (std::string &combination: combinations)
+  {
+    combination = combination.substr(4);
+  }
+  return combinations;
+}
+
+void Graph::PrintPaths()
+{
+  size_t i = 1;
+  for (std::vector<size_t> &path: _paths)
+  {
+    std::cout << "Путь " << i++ << std::endl; // вывод пути
+    std::cout << _physicEffects.at(path[0]);
+    for (size_t j = 1; j < path.size(); j++)
+    {
+      std::cout << " => " << _physicEffects[path[j]];
+    }
+    std::endl(std::cout);
+    std::vector<std::vector<std::string>> combinations;
+    for (size_t j = 0; j < path.size() - 1; j++)
+    {
+      combinations.emplace_back();
+      for (Branch &branch: _branches) // находим все ФЭ между двумя ФВ
+      {
+        if (branch.node1 == path[j] && branch.node2 == path[j + 1])
+        {
+          combinations[j].push_back(branch.name);
+        }
+      }
+    }
+    std::vector<std::string> results = GenerateCombinations(combinations);
+    for (size_t j = 0; j < results.size(); j++)
+    {
+      std::cout << j + 1 << ": " << results[j] << std::endl;
+    }
   }
 }

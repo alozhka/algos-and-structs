@@ -28,8 +28,8 @@ int main(const int argc, const char *argv[])
   {
     Graph graph;
     graph.ImportFromDefaultConfig();
-    const std::vector<std::vector<size_t>> paths = graph.FindPaths(std::stoull(argv[1]), std::stoull(argv[2]));
-    //graph.PrintPaths(paths);
+    graph.FindPaths(std::stoull(argv[1]), std::stoull(argv[2]));
+    graph.PrintPaths();
   }
   catch (std::exception &e)
   {

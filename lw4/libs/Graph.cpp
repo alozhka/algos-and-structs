@@ -51,7 +51,7 @@ void Graph::BranchesToMatrix()
   }
 }
 
-void Graph::ParseLineToNode(const std::string &s)
+void Graph::ParseLineToPhysicEffect(const std::string &s)
 {
   std::string parts[2];
 
@@ -92,7 +92,7 @@ void Graph::ImportFromDefaultConfig()
   _matrix.resize(maxId + 1);
   for (std::vector<size_t> &vector: _matrix)
   {
-    vector.resize(maxId);
+    vector.resize(maxId + 1);
   }
   BranchesToMatrix();
 
@@ -105,7 +105,7 @@ void Graph::ImportFromDefaultConfig()
 
   while (std::getline(stream, line))
   {
-    ParseLineToNode(line);
+    ParseLineToPhysicEffect(line);
   }
 }
 

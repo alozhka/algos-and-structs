@@ -10,6 +10,12 @@
 #include <sstream>
 #include <stack>
 
+static void SortByNestingVectorSize(std::vector<std::vector<size_t>> &v)
+{
+  std::sort(v.begin(), v.end(),
+            [](const std::vector<size_t> &a, const std::vector<size_t> &b) { return a.size() < b.size(); });
+}
+
 void Graph::ParseLineToBranch(const std::string &s)
 {
   std::istringstream str_stream(s);
@@ -42,7 +48,6 @@ void Graph::BranchesToMatrix()
   for (const Branch &branch: _branches)
   {
     _matrix[branch.node1][branch.node2] = 1;
-    _matrix[branch.node2][branch.node1] = 1;
   }
 }
 
@@ -64,7 +69,7 @@ void Graph::AddBranch(size_t node1, size_t node2, const std::string &name)
 
 void Graph::ImportFromDefaultConfig()
 {
-  std::ifstream stream("../data/test.TXT"); // "../data/PHYS.TXT"
+  std::ifstream stream("../data/PHYS.TXT");
   if (!stream.is_open())
   {
     throw std::invalid_argument("Ошибка при открытии списка физических эффектов");
@@ -111,11 +116,16 @@ std::vector<std::vector<size_t>> Graph::FindPaths(const size_t start, const size
   std::stack<std::pair<size_t, std::vector<size_t>>> stack;
 
   FindPathsRecursiverly(start, end, {});
+  SortByNestingVectorSize(_paths);
   return _paths;
 }
 
 void Graph::FindPathsRecursiverly(const size_t start, const size_t end, std::vector<std::size_t> path)
 {
+  if (path.size() == 5) // больше 4 звеньев (5 верщин) не берём
+  {
+    return;
+  }
   path.push_back(start);
   if (start == end)
   {

@@ -64,7 +64,7 @@ void Graph::AddBranch(size_t node1, size_t node2, const std::string &name)
 
 void Graph::ImportFromDefaultConfig()
 {
-  std::ifstream stream("../data/PHYS.TXT");
+  std::ifstream stream("../data/test.TXT"); // "../data/PHYS.TXT"
   if (!stream.is_open())
   {
     throw std::invalid_argument("Ошибка при открытии списка физических эффектов");
@@ -108,40 +108,33 @@ void Graph::ImportFromDefaultConfig()
 std::vector<std::vector<size_t>> Graph::FindPaths(const size_t start, const size_t end)
 {
   std::set<size_t> visited;
-  std::vector<std::vector<size_t>> paths;
   std::stack<std::pair<size_t, std::vector<size_t>>> stack;
-  stack.emplace(start, std::vector{start});
 
-  while (!stack.empty())
+  FindPathsRecursiverly(start, end, {});
+  return _paths;
+}
+
+void Graph::FindPathsRecursiverly(const size_t start, const size_t end, std::vector<std::size_t> path)
+{
+  path.push_back(start);
+  if (start == end)
   {
-    auto [currentNodeIndex, currentNodePath] = stack.top();
-    stack.pop();
-    if (currentNodeIndex == end) // Если <= 5 вершин в пути и последний == end
+    _paths.push_back(path);
+    return;
+  }
+  _visited.insert(start);
+
+  for (size_t i = 0; i < _matrix[start].size(); i++)
+  {
+    if (_matrix[start][i]) // нашли вершину
     {
-      paths.push_back(currentNodePath);
-      continue;
-    }
-
-    visited.insert(currentNodeIndex);
-
-    if (currentNodePath.size() > 4) // Если уже 5 вершин, то даже если мы найдём новый путь, то их уже будет 6
-    {
-      continue;
-    }
-
-
-    for (size_t i = 1; i < _matrix.size(); i++)
-    {
-      if (_matrix[currentNodeIndex][i] && !visited.contains(i))
+      if (!_visited.contains(i)) // ещё не посещена
       {
-        std::vector<size_t> pathToI = currentNodePath;
-        pathToI.push_back(i);
-        stack.emplace(i, pathToI);
+        FindPathsRecursiverly(i, end, path);
       }
     }
   }
-
-  return paths;
+  _visited.extract(start); // убираем посещение для других рекурсий
 }
 
 void Graph::PrintPaths(const std::vector<std::vector<Branch>> &paths)

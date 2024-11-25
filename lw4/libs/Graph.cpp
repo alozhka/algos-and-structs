@@ -183,22 +183,22 @@ void Graph::PrintPaths()
       std::cout << " => " << _physicEffects[path[j]];
     }
     std::endl(std::cout);
-    std::vector<std::vector<std::string>> combinations;
+
     for (size_t j = 0; j < path.size() - 1; j++)
     {
-      combinations.emplace_back();
-      for (Branch &branch: _branches) // находим все ФЭ между двумя ФВ
+      std::cout << "  Звено " << j + 1 << std::endl;
+      std::cout << "  " << _physicEffects[path[j]] << " => " << _physicEffects[path[j + 1]] << std::endl;
+      size_t k = 1;
+
+      for (const Branch &branch: _branches) // находим все ФЭ между двумя ФВ
       {
         if (branch.node1 == path[j] && branch.node2 == path[j + 1])
         {
-          combinations[j].push_back(branch.name);
+          std::cout << "  " << k++ << ") " << branch.name << std::endl;
         }
       }
+      std::endl(std::cout);
     }
-    std::vector<std::string> results = GenerateCombinations(combinations);
-    for (size_t j = 0; j < results.size(); j++)
-    {
-      std::cout << j + 1 << ": " << results[j] << std::endl;
-    }
+    std::endl(std::cout);
   }
 }

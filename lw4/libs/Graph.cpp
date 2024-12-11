@@ -145,32 +145,6 @@ void Graph::FindPathsRecursiverly(const size_t start, const size_t end, std::vec
   _visited.extract(start); // убираем посещение для других рекурсий
 }
 
-std::vector<std::string> GenerateCombinations(std::vector<std::vector<std::string>> &arrays)
-{
-  std::vector<std::string> combinations = {""};
-
-  for (const auto &array: arrays)
-  {
-    std::vector<std::string> newCombinations;
-
-    for (const std::string &combination: combinations)
-    {
-      for (const auto &element: array)
-      {
-        newCombinations.push_back(combination + " ⇒ " + element);
-      }
-    }
-
-    combinations = newCombinations;
-  }
-
-  for (std::string &combination: combinations)
-  {
-    combination = combination.substr(4);
-  }
-  return combinations;
-}
-
 void Graph::PrintPaths()
 {
   size_t i = 1;

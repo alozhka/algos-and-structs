@@ -8,7 +8,10 @@
 */
 #include <iostream>
 
+#include "libs/BTree.h"
+
 int main() {
+  BTree tree{};
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }

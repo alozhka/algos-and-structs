@@ -10,8 +10,9 @@
 
 #include "libs/BTree.h"
 
-int main() {
+int main()
+{
   BTree tree{};
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+  std::cout << "Hello, World!" << std::endl;
+  return 0;
 }

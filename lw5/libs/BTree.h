@@ -6,7 +6,10 @@
 #define BTREE_H
 #include <fstream>
 #include <string>
-#include <vector>
+#include <cstring>
+
+
+constexpr ulong BTREE_ORDER = 4;
 
 struct BTreeSpecs;
 
@@ -19,39 +22,61 @@ public:
   explicit KeyValue(const long index) : index(index), key({}), value({}) {}
 };
 
-class Page
+struct Page
 {
-  size_t index; // 0, 1, 2, 3, ...
-  std::vector<size_t> indexes; // индексы ключей в файле data.bin
-  std::vector<long> keys; // ключи в файле data.bin
-  std::vector<size_t> childrenIndexes; // индексы детей
-public:
-  explicit Page(const long index, const size_t size) : index(index), keys(size), childrenIndexes(size) {}
+  // 0, 1, 2, 3, ...
+  size_t index;
+
+  // индексы ключей в файле data.bin
+  size_t indexes[BTREE_ORDER];
+
+  // количество значений
+  size_t numKeys;
+
+  // ключи в файле data.bin
+  long keys[BTREE_ORDER];
+
+  // индексы детей
+  size_t childrenIndexes[BTREE_ORDER];
+
+  explicit Page(const long pageIndex) {
+    index = pageIndex;
+    numKeys = 0;
+    std::memset(keys, 0, sizeof(keys));
+    std::memset(indexes, -1, sizeof(indexes));
+    std::memset(childrenIndexes, -1, sizeof(childrenIndexes));
+  }
 };
 
 
 class BTree
 {
   std::fstream _pages, _valuesBin, _valuesTxt;
-  size_t _degree;
+  size_t _rootIndex;
 
-  void ParseSpecs();
+  void InitializeOnce();
+  Page ReadPage(const size_t pageIndex);
 public:
   explicit BTree()
   {
-    _pages.open("data/pages.bin", std::ios::in | std::ios::out | std::ios::binary);
+    _pages.open("../data/pages.bin", std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
     if (!_pages.is_open())
     {
       throw std::invalid_argument("Could not open pages file");
     }
+    _pages.seekg(0, std::ios::end);
+    if (!_pages.tellg() == 0)
+    {
+      InitializeOnce();
+    }
 
-    _valuesBin.open("data/values.bin", std::ios::in | std::ios::out | std::ios::binary);
+    _valuesBin.open("../data/values.bin", std::ios::in | std::ios::out | std::ios::binary | std::ios::app);
     if (!_valuesBin.is_open())
     {
       throw std::invalid_argument("Could not open data file");
     }
 
-    _valuesTxt.open("data/values.txt", std::ios::in | std::ios::out);
+    _valuesTxt.open("../data/values.txt", std::ios::in | std::ios::out | std::ios::app);
     if (!_valuesTxt.is_open())
     {
       throw std::invalid_argument("Could not open data file");
@@ -70,12 +95,6 @@ public:
     _valuesBin.close();
     _valuesTxt.close();
   }
-};
-
-struct BTreeSpecs
-{
-  size_t size;
-  Page *root;
 };
 
 #endif //BTREE_H

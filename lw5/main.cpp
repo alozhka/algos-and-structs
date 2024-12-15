@@ -12,7 +12,7 @@
 
 int main()
 {
-  BTree tree{};
+  BTree tree;
   std::cout << "Hello, World!" << std::endl;
   return 0;
 }

@@ -7,12 +7,14 @@
 #include <iostream>
 
 constexpr int PageSize = sizeof(Page);
+constexpr int DataSize = sizeof(Data);
 
 /*
  * Initialize
  */
 
-void BTree::InitializeOnce() {
+void BTree::InitializeOnce()
+{
   _rootIndex = 0;
   Page page{0};
 
@@ -24,11 +26,20 @@ void BTree::InitializeOnce() {
  * Read
  */
 
-Page BTree::ReadPage(const size_t pageIndex) {
+Page BTree::ReadPage(const size_t pageIndex)
+{
   Page page{0};
   _pages.seekg(pageIndex * PageSize);
   _pages.read(reinterpret_cast<char *>(&page), PageSize);
   return page;
+}
+
+Data BTree::ReadData(const size_t dataIndex)
+{
+  Data data{0};
+  _valuesBin.seekg(dataIndex * DataSize);
+  _valuesBin.read(reinterpret_cast<char *>(&data), DataSize);
+  return data;
 }
 
 
@@ -36,11 +47,10 @@ Page BTree::ReadPage(const size_t pageIndex) {
  * Write
  */
 
-void BTree::Insert(const std::string &value) {
-  // пропустили характеристики дерева + количество по индексу после него до нужного узла
-  Page page = ReadPage(_rootIndex);
-  if (page.numKeys == BTREE_ORDER) {
-    Page newPage(0);
-    newPage.childrenIndexes[0] = page.index;
-  }
+void BTree::Insert(const std::string &value)
+{
+  const Page page = ReadPage(_rootIndex);
+  page.keys[0] = 24;
+  page.indexes[0] = 1;
+
 }

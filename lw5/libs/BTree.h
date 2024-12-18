@@ -4,22 +4,22 @@
 
 #ifndef BTREE_H
 #define BTREE_H
+#include <cstring>
 #include <fstream>
 #include <string>
-#include <cstring>
 
 
 constexpr ulong BTREE_ORDER = 4;
 
 struct BTreeSpecs;
 
-class KeyValue
+class Data
 {
   size_t index; // 0, 1, 2, 3, ...
   long key; // 25, 61, 99 - по ним идёт балансировка
   std::string value; // само значение
 public:
-  explicit KeyValue(const long index) : index(index), key({}), value({}) {}
+  explicit Data(const long index) : index(index), key({}), value(50, ' ') {}
 };
 
 struct Page
@@ -39,7 +39,8 @@ struct Page
   // индексы детей
   size_t childrenIndexes[BTREE_ORDER];
 
-  explicit Page(const long pageIndex) {
+  explicit Page(const long pageIndex)
+  {
     index = pageIndex;
     numKeys = 0;
     std::memset(keys, 0, sizeof(keys));
@@ -56,6 +57,11 @@ class BTree
 
   void InitializeOnce();
   Page ReadPage(const size_t pageIndex);
+  void WritePage();
+
+  Data ReadData(size_t dataIndex);
+  void WriteData(const std::string &value);
+
 public:
   explicit BTree()
   {
@@ -83,11 +89,11 @@ public:
     }
   }
 
-  void Contains(const std::string& value);
+  void Contains(const std::string &value);
 
-  void Insert(const std::string& value);
+  void Insert(const std::string &value);
 
-  void Erase(const std::string& value);
+  void Erase(const std::string &value);
 
   ~BTree()
   {
